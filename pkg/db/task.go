@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -70,4 +71,33 @@ func searchByText(search string, limit int) (*sql.Rows, error) {
 	          ORDER BY date LIMIT ?`
 	pattern := "%" + search + "%"
 	return DB.Query(query, pattern, pattern, limit)
+}
+
+func GetTask(id string) (*Task, error) {
+	t := &Task{}
+	query := `SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?`
+	err := DB.QueryRow(query, id).Scan(&t.ID, &t.Date, &t.Title, &t.Comment, &t.Repeat)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("задача не найдена")
+	}
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+func UpdateTask(task *Task) error {
+	query := `UPDATE scheduler SET date = ?, title = ?, comment = ?, repeat = ? WHERE id = ?`
+	res, err := DB.Exec(query, task.Date, task.Title, task.Comment, task.Repeat, task.ID)
+	if err != nil {
+		return err
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return fmt.Errorf("задача не найдена")
+	}
+	return nil
 }
