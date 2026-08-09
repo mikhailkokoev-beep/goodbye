@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"todo/pkg/api"
 )
 
 func Start() {
@@ -12,6 +14,8 @@ func Start() {
 	if port == "" {
 		port = "7540"
 	}
+
+	api.Init()
 
 	http.Handle("/", http.FileServer(http.Dir("./web")))
 
